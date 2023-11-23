@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { Modal, Button } from "react-bootstrap";
+import Swal from 'sweetalert2';
 
 class Form extends React.Component{
     constructor(props){
@@ -10,7 +11,7 @@ class Form extends React.Component{
             name:"",
             paternalSurname:"",
             maternalSurname:"",
-            birthDate:"",
+            birthDate:null,
             cellphoneNumber:"",
             email:"",
             errors:{},
@@ -28,7 +29,15 @@ class Form extends React.Component{
       }
     
       handleClose() {
+        event.preventDefault();
         this.setState({ showModal: false });
+        this.setState({ name: "" });
+        this.setState({ paternalSurname: "" });
+        this.setState({ maternalSurname: "" });
+        this.setState({ birthDate: null });
+        this.setState({ cellphoneNumber: "" });
+        this.setState({ email: "" });
+        this.setState({ errors: {} });
       }
 
     handleInputChange(event){
@@ -50,16 +59,26 @@ class Form extends React.Component{
             };
 
             // Realizar la solicitud POST a tu API
-            axios.post('https://localhost:7164/api/user', formData)
+            axios.post('https://localhost:6001/api/user', formData)
                 .then(response => {
-                    console.log('Respuesta de la API:', response.data);
+                    this.props.onUserAdded();
+
+                    this.handleClose();
+                    Swal.fire({
+                        title: 'Realizado',
+                        text: 'Usuario guardado correctamente',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                      });
                 })
                 .catch(error => {
-                    console.error('Error al enviar los datos:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No fue posible guardar el usuario',
+                        icon: 'warning',
+                        confirmButtonText: 'Ok'
+                      });
                 });
-        }
-        else{
-            console.log("form invalido");
         }
     }
 
@@ -73,13 +92,25 @@ class Form extends React.Component{
         }
 
         if(this.state.email == ""){
-            errors.name = "El email no puede estar vacio";
+            errors.email = "El email no puede estar vacio";
+            valid = false;
+        }
+
+        if(this.state.cellphoneNumber == ""){
+            errors.cellphoneNumber = "El teléfono no puede estar vacio";
+            valid = false;
+        }
+
+        if(!this.state.birthDate){
+            errors.birthDate = "La fecha de nacimiento no puede estar vacia";
             valid = false;
         }
 
         this.setState({errors});
         return valid;
     }
+
+
 
     render(){
         return (
